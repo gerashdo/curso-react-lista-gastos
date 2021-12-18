@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import Boton from '../elements/Boton';
+import agregarGasto from '../firebase/agregarGasto';
 import { ContenedorFiltros, Formulario, Input, InputGrande, ContenedorBoton } from './../elements/ElementosFormulario';
 import { ReactComponent as IconoPlus } from './../imagenes/plus.svg'
 import DatePicker from './DatePicker';
 import SelectCategorias from './SelectCategorias';
+import getUnixTime from 'date-fns/getUnixTime';
+// import fromUnixTime from 'date-fns/fromUnixTime';
+import { useAuth } from '../contexts/AuthContext';
+import Alerta from './../elements/Alerta';
 
 const FormularioGasto = () => {
 
@@ -11,6 +16,9 @@ const FormularioGasto = () => {
     const [inputCantidad, setInputCantidad] = useState('');
     const [categoria, setCategoria] = useState('hogar');
     const [fecha, setFecha] = useState(new Date());
+    const [estadoAlerta, setEstadoAlerta] = useState(false);
+    const [alerta, setAlerta] = useState({});
+    const { usuario } = useAuth();
 
     const handleChange = ( e ) => {
         if ( e.target.name === 'descripcion' ) {
@@ -20,8 +28,58 @@ const FormularioGasto = () => {
         }
     }
 
+    const handleSubmit = async ( e ) => {
+        e.preventDefault();
+        let cantidad = parseFloat(inputCantidad).toFixed(2);
+        
+        // haya descripcion y valor
+        if ( inputDescripcion.trim().length > 0 && cantidad && cantidad > 0 ) {
+
+            try {
+                
+                await agregarGasto({
+                    uidUsuario: usuario.uid,
+                    descripcion: inputDescripcion,
+                    cantidad: cantidad,
+                    categoria: categoria,
+                    fecha: getUnixTime(fecha)
+                });
+
+                setInputDescripcion('');
+                setInputCantidad('');
+                setCategoria('hogar');
+                setFecha(new Date());
+
+                setEstadoAlerta(true);
+                setAlerta({
+                    mensaje: 'Gasto agregado correctamente',
+                    tipo: 'exito'
+                });
+
+            } catch (error) {
+
+                setEstadoAlerta(true);
+                setAlerta({
+                    mensaje: 'Ocurrió un error al agregar el gasto',
+                    tipo: 'error'
+                });
+
+            }
+
+        } else {
+
+            setEstadoAlerta(true);
+            setAlerta({
+                mensaje: 'Algunos datos no son correctos',
+                tipo: 'error'
+            });
+
+        }
+
+    }
+
     return (
-        <Formulario>
+        <Formulario onSubmit={ handleSubmit }>
             <ContenedorFiltros>
                 <SelectCategorias categoria={ categoria } setCategoria={ setCategoria }/>
                 <DatePicker fecha={ fecha } setFecha={ setFecha }/>
@@ -49,6 +107,12 @@ const FormularioGasto = () => {
                     Agregar gasto <IconoPlus />
                 </Boton>
             </ContenedorBoton>
+            <Alerta 
+                tipo={ alerta.tipo }
+                mensaje={ alerta.mensaje }
+                estadoAlerta={ estadoAlerta }
+                setEstadoAlerta={ setEstadoAlerta }
+            />
         </Formulario>
     );
 }

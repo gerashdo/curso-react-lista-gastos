@@ -9,7 +9,7 @@ import { ReactComponent as IconoSaludEHigiene } from './../imagenes/cat_salud-e-
 import { ReactComponent as IconoTransporte } from './../imagenes/cat_transporte.svg';
 
 const IconoCategoria = ({ id }) => {
-    switch( id ){
+    switch( id.toLowerCase() ){
         case 'comida':
             return <IconoComida />;
         case 'compras':
