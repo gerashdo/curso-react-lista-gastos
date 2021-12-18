@@ -26,6 +26,7 @@ import { Link } from 'react-router-dom';
 import Boton from './../elements/Boton';
 import { format, fromUnixTime } from 'date-fns';
 import { es } from 'date-fns/locale';
+import borrarGasto from '../firebase/boorarGasto';
 
 
 const ListaGastos = () => {
@@ -84,7 +85,7 @@ const ListaGastos = () => {
                                         <IconoEditar /> 
                                     </BotonAccion>
                                     <BotonAccion> 
-                                        <InconoBorrar /> 
+                                        <InconoBorrar onClick={ () => borrarGasto( gasto.id ) }/> 
                                     </BotonAccion>
                                 </ContenedorBotones>
                             </ElementoLista>
